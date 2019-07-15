@@ -1,0 +1,17 @@
+build/
+config/
+docs/
+doc/
+example/
+static/
+.bin/
+.DS_Store
+.npm-debug.log
+.babelrc
+.npmignore
+.editorconfig
+.eslintrc.js
+.tsconfig.json
+package-lock.json
+
+
