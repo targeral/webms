@@ -6,7 +6,7 @@ import {
   UnlimitedScrollType,
   DampingType
 } from './scrollor'
-import { addEvent, TouchEventEnum, getElement } from 'share-utils/src/dom'
+import { addEvent, TouchEventEnum } from 'share-utils/src/dom'
 import EventEmitter from './eventEmitter'
 
 export interface IScrollCBOption {
