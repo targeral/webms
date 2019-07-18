@@ -7,7 +7,7 @@
     "bootstrap": "lerna bootstrap",
     "packages:build": "node scripts/build.js",
     "packages:release": "node scripts/release.js",
-    "lib": "parcel example/index.html"
+    "lib": "parcel"
   },
   "lint-staged": {
     "*.ts": [
