@@ -16,9 +16,10 @@
             width: 100px;
         } */
         .box {
-            width: 20%;
-            height: 10px;
+            width: 100%;
+            height: 100px;
             background: green;
+            font-size: 16px;
         }
         .boxvw {
             width: calc(414 * 100vw / 414);
@@ -53,10 +54,15 @@
             height: 10px;
             background: green;
         }
+        .resize {
+            font-size: 20px;
+        }
     </style>
 </head>
 <body>
-    <div class="box"></div>
+    <div class="box">
+    </div>
+    <div class="resize"></div>
     <!-- <div class="container">
         <div class="box"></div>
         <div class="boxvw"></div>
@@ -74,6 +80,14 @@
         const html = document.documentElement;
         html.style.fontSize = `${rem}px`;
         console.log(window.innerWidth, window.devicePixelRatio);
+        window.addEventListener('orientationchange', e => {
+            console.log(window.orientation);
+            box.innerHTML = window.orientation;
+        });
+        let a = 0;
+        window.addEventListener('resize', e => {
+            document.getElementsByClassName('resize')[0].innerHTML = a++;
+        });
     </script>
 </body>
 </html>

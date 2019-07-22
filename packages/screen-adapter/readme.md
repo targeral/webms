@@ -191,3 +191,80 @@ JavaScript中`window.devicePixelRatio`和CSS中`device-pixel-ratio`的单位都�
 * user-scalable：是否阻止用户缩放。
 
 ##### width
+
+##### aspect-ratio和device-aspect-ratio
+
+aspect-ratio和device-aspect-ratio分别提供了布局视口的宽高比和`screen.width/height`的值。这个比例是用一个分数表示的。例如：3/4或16/9。（css媒体查询属性）
+
+##### 布局视口
+
+获取布局视口的方式通过：
+
+``` js
+document.documentElement.clientWidth/Height
+```
+
+##### 视觉视口
+
+获取视觉视口的方式通过：
+
+``` js
+window.innerWidth/Height
+```
+
+但不是所有的浏览器都支持。最严重的问题出现在安卓webkit2和代理浏览器上。幸运的是，你并不会经常需要知道视觉视口的尺寸。
+
+##### 理想视口————还是屏幕尺寸
+
+对于理想视口，我们可以通过`screen.width/height`来获取，但是它有很严重的兼容性问题。
+
+对于 `screen.width/height`，根据浏览器情况，这可能是两种值：
+
+1. 理想视口的尺寸
+2. 屏幕的设备像素尺寸
+
+这意味着在实践中你不能使用`screen.width/height`，因为你永远不知道你获得的是什么值。
+
+*记住，device-width和device-height媒体查询使用了javascript提供的screen.width/height，不用管浏览器使用的是哪个定义。*
+
+##### devicePixelRatio
+
+它没有单位，提供了屏幕的物理尺寸和理想视口的比例。device-pixel-ratio媒体查询使用了同样的值。
+
+##### 改变meta视口标签
+
+在大多数浏览器中，我们可以改变meta视口标签。假设meta视口是你的文档中的第一个meta标签，像下面这么做：
+
+``` js
+var meta = document.getElementsByTagName('meta')[0];
+meta.setAttribute('content', 'width=400');
+```
+
+*注意：我们无法通过移除meta标签来使布局视口变回它默认的宽度。但是，你可以把它设为一个固定的值，例如，如果你想提供“切换到桌面布局”的功能，可以把宽度设置为980px或1024px。*
+
+##### orientationchange事件
+
+在所有的webkit和基于Blink的浏览器中，只要用户改变了设备的方向，`orientationchange`事件就会被触发。其中IE11和Firefox31都不支持它。
+
+当事件发生时候，可以通过`window.orientation`（数值类型）得到此时的状况：
+
+* 0代表竖屏
+* 90代表由竖屏逆时针旋转到横屏
+* -90代表由竖屏顺时针旋转到横屏
+* 还有一个是180，表示竖屏但是是翻转过来的竖屏模式。但这种模式至今尚未得到支持。
+
+https://blog.csdn.net/gong1422425666/article/details/79001836
+
+##### resize事件
+
+当视口尺寸大小改变的时候，就会触发`resize`事件。那是指哪一个视口呢？毫无疑问，浏览器在这个问题上没有达成一致。
+
+*一个问题：如果我们将设备旋转了180度，orientationchange事件是否应该触发呢？一方面，设备旋转了，另一方面，最终的方向跟最初的是一样的：你从竖屏切换到竖屏或从横屏切换到横屏，浏览器会有不同的对策。(经测试，iphone手机浏览器上是不会触发resize事件)*
+
+一般来说，理想视口的尺寸是不会被改变的。那么剩下的布局视口和视觉视口。大部分浏览器都会在布局视口的尺寸改变的时候触发`resize`事件，而在视觉视口尺寸改变时（就是用户缩放时）不会触发。这个规则不是绝对的。
+
+让事情变复杂的是，有很多改变布局视口或视觉视口尺寸的方法，但并不是所有方法都会触发resize事情。为了让事情变得复杂一点，Safari会在并不是视口的html元素增加或删减内容的时候触发`resize`事件。这绝对是不应该发生的。
+
+**所以最好不要轻信resize事件**
+
+## 高分辨率图片
