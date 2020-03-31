@@ -41,12 +41,18 @@ const generateBuildPluginsConfigs = (miniEnable, packageName) => {
     return plugins;
 };
 
-const gePackagestName = () => {
+const getPackagestName = () => {
     let packagesName = glob.sync('packages/*');
     packagesName = packagesName.filter(name => {
         const isPrivatePackage = require(resolve(`${name}/package.json`)).private;
         return !isPrivatePackage;
-    }).map(name => name.split('packages/')[1]);
+    }).map(name => {
+        if (require(resolve(`${name}/package.json`)).rollup) {
+            return [name.split('packages/')[1], ...require(resolve(`${name}/package.json`)).rollup];
+        } else {
+            return name.split('packages/')[1];
+        }
+    });
 
     return packagesName;
 };
@@ -78,7 +84,7 @@ const getAnswersFromInquirer = async (packagesName) => {
     }
 
     if (packages.some(package => package === 'all')) {
-        packages = gePackagestName();
+        packages = getPackagestName();
     }
 
     const { yes } = await inquirer.prompt([{
@@ -97,9 +103,15 @@ const getAnswersFromInquirer = async (packagesName) => {
 };
 
 const clearPackagesOldDist = (packagesName = []) => {
+    let clearName = '';
     for (let name of packagesName) {
-        const distPath = resolve(`packages/${name}/dist`);
-        const typePath = resolve(`packages/${name}/types`);
+        if (Array.isArray(name)) {
+            clearName = name[0];
+        } else {
+            clearName = name;
+        }
+        const distPath = resolve(`packages/${clearName}/dist`);
+        const typePath = resolve(`packages/${clearName}/types`);
         if (fs.existsSync(distPath)) {
             rimraf.sync(distPath);
         }
@@ -127,15 +139,22 @@ const buildType = [
     }
 ]
 
-const generateBuildConfigs = (packagesName = []) => {
-    const result = [];
-
+const generateBuildConfigs = (packagesName = [], fileName = 'index') => {
+    let result = [];
     for(let name of packagesName) {
+        console.log(name);
+        if (Array.isArray(name)) {
+            const pn = name[0];
+            name.slice(1).forEach(n => {
+                result = [...result, ...generateBuildConfigs([pn], n)];
+            });
+            continue;
+        }
         for (let type of buildType) {
             let config = {
-                input: resolve(`packages/${name}/src/index.ts`),
+                input: resolve(`packages/${name}/src/${fileName}.ts`),
                 output: {
-                    file: resolve(`packages/${name}/dist/${name}${type.ext}`),
+                    file: resolve(`packages/${name}/dist/${fileName}${type.ext}`),
                     name: PascalCase(name),
                     format: type.format
                 },
@@ -173,6 +192,7 @@ const copyDTSFiles = packageName => {
 };
 
 const buildEntry = (config, curIndex, next) => {
+    // console.log('=====', config, config.output);
     const miniEnable = /min.js$/.test(config.output.file);
 
     spinner.start(`${config.packageName}${config.ext} is buiding now. \n`);
@@ -225,7 +245,7 @@ const build = (configs) => {
 
 const buildBootstrap = async () => {
     // 获取所有packages的名称
-    const packagesName = gePackagestName();
+    const packagesName = getPackagestName();
     packagesName.unshift('all');
 
     const answers = await getAnswersFromInquirer(packagesName);
@@ -233,9 +253,8 @@ const buildBootstrap = async () => {
     if (answers === NO_ANWSER) return;
 
     clearPackagesOldDist(answers);
-
     const buildConfigs = generateBuildConfigs(answers)
-
+    console.log(buildConfigs.length)
     build(buildConfigs);
 };
 
