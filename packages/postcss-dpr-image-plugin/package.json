@@ -31,6 +31,6 @@
     "url": "https://github.com/targeral/webms-scroll/issues"
   },
   "dependencies": {
-    "postcss": "^7.0.17"
+    "postcss": "^8.2.10"
   }
 }
